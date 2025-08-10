@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Workout Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        /* ...existing CSS unchanged... */
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-medium: #151515;
+            --bg-card: rgba(25, 25, 25, 0.6);
+            --text-white: #efefef;
+            --text-light-gray: #bdbdbd;
+            --accent-color: #00ffff;
+            --border-color: #2d2d2d;
+            --primary-gradient: linear-gradient(90deg, #00ffff, #00bfff);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Montserrat", sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=3840&q=80') no-repeat center/cover;
+            background-attachment: fixed;
+            color: var(--text-white);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 0;
+        }
+        .centered-content { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 800px; }
+        .container { width: 90%; padding: 40px; background-color: var(--bg-card); backdrop-filter: blur(10px); border-radius: 10px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0, 255, 255, 0.1); margin-bottom: 30px; }
+        h1 { font-family: 'Roboto Condensed', sans-serif; font-size: clamp(2rem, 5vw, 3rem); text-align: center; margin-bottom: 24px; background-image: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { font-family: 'Roboto Condensed', sans-serif; font-size: 1.8rem; color: var(--text-white); margin: 0; }
+        p { text-align: center; color: var(--text-light-gray); margin-bottom: 32px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+        .form-group input[type="text"], .form-group input[type="number"], .form-group select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-medium); color: var(--text-white); font-family: 'Montserrat', sans-serif; font-size: 1rem; appearance: none; -webkit-appearance: none; -moz-appearance: none; }
+        .form-group input[type="text"], .form-group input[type="number"] { box-sizing: border-box; }
+        .form-group select { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%2300FFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px top 50%; }
+        .btn-group { display: flex; gap: 15px; margin-top: 20px; }
+        .btn { flex-grow: 1; font-family: 'Roboto Condensed', sans-serif; font-weight: 700; padding: 14px 20px; border-radius: 9999px; text-decoration: none; transition: all 0.3s ease; display: inline-block; text-transform: uppercase; letter-spacing: 1px; border: none; cursor: pointer; box-shadow: 0 8px 25px rgba(0, 255, 255, 0.4); background-image: var(--primary-gradient); color: var(--bg-dark); }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0, 255, 255, 0.6); }
+        .btn-secondary { background-image: none; background-color: var(--bg-medium); color: var(--text-white); border: 1px solid var(--accent-color); box-shadow: none; }
+        .btn-secondary:hover { background-color: var(--accent-color); color: var(--bg-dark); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 255, 255, 0.4); }
+        .btn-danger { background-image: none; background-color: #f44336; color: var(--text-white); border: 1px solid #f44336; box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4); }
+        .btn-danger:hover { background-color: #d32f2f; transform: translateY(-3px); box-shadow: 0 12px 30px rgba(244, 67, 54, 0.6); }
+        .btn-clear-history { background-color: #4a4a4a; color: var(--text-white); border: 1px solid #6b6b6b; box-shadow: none; }
+        .btn-clear-history:hover { background-color: #6b6b6b; color: var(--text-white); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(107, 107, 107, 0.4); }
+        #workout-output { margin-top: 40px; padding: 20px; background-color: var(--bg-medium); border-radius: 8px; border: 1px solid var(--border-color); display: none; }
+        #workout-output h3 { font-family: 'Roboto Condensed', sans-serif; font-size: 1.5rem; color: var(--accent-color); margin-bottom: 15px; }
+        #workout-list li { background-color: var(--bg-card); padding: 12px; margin-bottom: 10px; border-radius: 5px; border-left: 3px solid var(--accent-color); transition: transform 0.2s ease; list-style: none; }
+        #workout-list li:hover { transform: translateX(5px); }
+        #timer { text-align: center; font-size: 2rem; font-weight: 700; margin-top: 20px; color: var(--accent-color); display: none; }
+        .log-history-container { margin-top: 40px; padding: 20px; background-color: var(--bg-medium); border-radius: 8px; border: 1px solid var(--border-color); }
+        .log-history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; cursor: pointer; }
+        .log-history-header h2 { margin: 0; text-align: left; }
+        .log-history-content { display: none; }
+        .log-history-content.visible { display: block; }
+        .log-history-item { margin-bottom: 20px; padding: 15px; background-color: var(--bg-card); border-radius: 8px; border-left: 3px solid var(--accent-color); }
+        .log-history-item h4 { font-family: 'Roboto Condensed', sans-serif; color: var(--accent-color); margin-bottom: 10px; }
+        .empty-history-message { text-align: center; color: var(--text-light-gray); font-style: italic; }
+        @media (max-width: 600px) { .btn-group { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <div class="centered-content">
+        <div class="container">
+            <h1>Interactive Workout Generator</h1>
+            <p>Select your preferences to create a customized workout plan.</p>
+            <form id="workout-form">
+                <div class="form-group">
+                    <label for="goal">Choose your goal:</label>
+                    <select id="goal" name="goal">
+                        <option value="strength">Increase Strength</option>
+                        <option value="endurance">Improve Endurance</option>
+                        <option value="hypertrophy">Build Muscle</option>
+                        <option value="flexibility">Enhance Flexibility</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="level">Select your fitness level:</label>
+                    <select id="level" name="level">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="equipment">What equipment do you have?</label>
+                    <select id="equipment" name="equipment">
+                        <option value="bodyweight">Bodyweight Only</option>
+                        <option value="dumbbells">Dumbbells</option>
+                        <option value="resistance-bands">Resistance Bands</option>
+                        <option value="kettlebells">Kettlebells</option>
+                        <option value="pull-up-bar">Pull-up Bar</option>
+                        <option value="trx">TRX / Suspension Trainer</option>
+                        <option value="mat">Workout Mat</option>
+                        <option value="full-gym">Full Gym Access</option>
+                        <option value="random">Randomize My Workout</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="mode">Choose Workout Mode:</label>
+                    <select id="mode" name="mode">
+                        <option value="sets-reps">Sets & Reps</option>
+                        <option value="circuit">Circuit</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="timer-minutes">Set Workout Timer (minutes):</label>
+                    <input type="number" id="timer-minutes" value="30" min="5" max="120" />
+                </div>
+                <div class="btn-group">
+                    <button type="submit" id="generate-btn" class="btn">Generate Workout</button>
+                    <button type="button" id="shuffle-btn" class="btn btn-secondary">Shuffle</button>
+                </div>
+            </form>
+            <div id="workout-output" style="display: none;">
+                <h3 id="workout-heading">Your Custom Workout:</h3>
+                <ul id="workout-list"></ul>
+                <div class="btn-group">
+                    <button id="log-workout" class="btn">Log This Workout</button>
+                    <button id="reset-btn" class="btn btn-secondary">Reset</button>
+                </div>
+            </div>
+            <div id="timer" style="display: none;">00:00</div>
+            <div class="btn-group" id="timer-controls" style="display: none;">
+                <button id="start-timer" class="btn">Start Timer</button>
+                <button id="stop-timer" class="btn btn-secondary" style="display:none">Stop Timer</button>
+            </div>
+        </div>
+        <div class="container log-history-container">
+            <div class="log-history-header" id="history-header">
+                <h2>Workout History</h2>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="log-history-content" id="workout-history-content">
+                <div id="workout-history">
+                    <p class="empty-history-message">No workouts logged yet. Generate and log your first one!</p>
+                </div>
+                <div class="btn-group">
+                    <button id="clear-history-btn" class="btn btn-clear-history">Clear History</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('workout-form');
+            const outputDiv = document.getElementById('workout-output');
+            const workoutList = document.getElementById('workout-list');
+            const workoutHeading = document.getElementById('workout-heading');
+            const generateButton = document.getElementById('generate-btn');
+            const shuffleButton = document.getElementById('shuffle-btn');
+            const logButton = document.getElementById('log-workout');
+            const resetButton = document.getElementById('reset-btn');
+            const timerDisplay = document.getElementById('timer');
+            const timerControls = document.getElementById('timer-controls');
+            const startTimerBtn = document.getElementById('start-timer');
+            const stopTimerBtn = document.getElementById('stop-timer');
+            const historyHeader = document.getElementById('history-header');
+            const historyContent = document.getElementById('workout-history-content');
+            const workoutHistory = document.getElementById('workout-history');
+            const clearHistoryBtn = document.getElementById('clear-history-btn');
+            let currentWorkout = [];
+            let timerInterval;
+            let totalSeconds;
+            let currentSeconds;
+
+            const workouts = {
+                strength: {
+                    beginner: {
+                        'bodyweight': ['Warm-up: 5-min jumping jacks', 'Push-ups on knees: 3 sets of 8 reps', 'Bodyweight squats: 3 sets of 12 reps', 'Plank: 3 sets of 30 seconds', 'Cool-down: Static stretching'],
+                        'dumbbells': ['Warm-up: 5-min arm circles', 'Dumbbell goblet squats: 3 sets of 10 reps', 'Dumbbell rows: 3 sets of 8 reps (per arm)', 'Dumbbell overhead press: 3 sets of 8 reps', 'Cool-down: Stretching'],
+                        'resistance-bands': ['Warm-up: 5-min light cardio', 'Banded squats: 3 sets of 15 reps', 'Banded chest press: 3 sets of 12 reps', 'Banded rows: 3 sets of 12 reps', 'Cool-down: Stretching with bands'],
+                        'kettlebells': ['Warm-up: Kettlebell halos', 'Kettlebell goblet squats: 3 sets of 10 reps', 'Single-arm kettlebell rows: 3 sets of 8 reps (per arm)', 'Cool-down: Gentle stretching'],
+                        'pull-up-bar': ['Warm-up: 5-min cardio', 'Dead hangs: 3 sets of 30 seconds', 'Inverted rows: 3 sets of 8 reps', 'Negative pull-ups: 3 sets of 5 reps', 'Cool-down: Arm and shoulder stretches'],
+                        'trx': ['Warm-up: TRX Y, I, T Raises', 'TRX squats: 3 sets of 15 reps', 'TRX rows: 3 sets of 12 reps', 'TRX plank: 3 sets of 45 seconds', 'Cool-down: TRX assisted stretching'],
+                        'mat': ['Warm-up: Cat-cow stretch', 'Glute bridges: 3 sets of 15 reps', 'Crunches: 3 sets of 20 reps', 'Leg raises: 3 sets of 15 reps', 'Cool-down: Cobra pose'],
+                        'full-gym': ['Warm-up: 5-min elliptical', 'Barbell squats: 3 sets of 5 reps', 'Barbell bench press: 3 sets of 5 reps', 'Lat pulldowns: 3 sets of 8 reps', 'Cool-down: Foam rolling']
+                    },
+                    intermediate: {
+                        'bodyweight': ['Warm-up: Dynamic stretches', 'Push-ups: 4 sets of 10-15 reps', 'Pistol squats (assisted): 4 sets of 6 reps (per leg)', 'Pull-ups: 4 sets to failure', 'Cool-down: Static stretching'],
+                        'dumbbells': ['Warm-up: 5-min jump rope', 'Dumbbell deadlifts: 4 sets of 8 reps', 'Incline dumbbell press: 4 sets of 10 reps', 'Renegade rows: 4 sets of 8 reps (per arm)', 'Cool-down: Stretching'],
+                        'resistance-bands': ['Warm-up: Dynamic stretches', 'Banded deadlifts: 4 sets of 10 reps', 'Banded squats: 4 sets of 15 reps', 'Banded overhead press: 4 sets of 12 reps', 'Cool-down: Stretching with bands'],
+                        'kettlebells': ['Warm-up: Kettlebell swings', 'Kettlebell goblet squats: 4 sets of 8 reps', 'Kettlebell clean and press: 4 sets of 6 reps (per arm)', 'Turkish get-ups: 3 sets of 1 rep (per arm)', 'Cool-down: Stretching'],
+                        'pull-up-bar': ['Warm-up: 5-min row machine', 'Pull-ups: 4 sets of 6-8 reps', 'Weighted chin-ups: 4 sets of 5 reps', 'Hanging leg raises: 4 sets of 15 reps', 'Cool-down: Hanging stretches'],
+                        'trx': ['Warm-up: TRX dynamic mobility', 'TRX pistol squats: 4 sets of 8 reps (per leg)', 'TRX chest press: 4 sets of 10 reps', 'TRX hamstring curls: 4 sets of 12 reps', 'Cool-down: TRX assisted stretching'],
+                        'mat': ['Warm-up: Glute bridges', 'Russian twists: 4 sets of 20 reps', 'V-ups: 4 sets of 15 reps', 'Hollow body holds: 4 sets of 30 seconds', 'Cool-down: Pigeon pose'],
+                        'full-gym': ['Warm-up: 5-min light cardio', 'Barbell deadlifts: 4 sets of 5 reps', 'Barbell overhead press: 4 sets of 8 reps', 'Weighted pull-ups: 4 sets of 6 reps', 'Cool-down: Foam rolling']
+                    }
+                },
+                hypertrophy: {
+                    beginner: {
+                        'bodyweight': ['Warm-up: 5-min light cardio', 'Push-ups: 3 sets to failure', 'Lunges: 3 sets of 12 reps (per leg)', 'Bodyweight rows: 3 sets of 12 reps', 'Cool-down: Stretching'],
+                        'dumbbells': ['Warm-up: 5-min jump rope', 'Dumbbell bench press: 3 sets of 10 reps', 'Dumbbell rows: 3 sets of 12 reps', 'Dumbbell lunges: 3 sets of 10 reps (per leg)', 'Cool-down: Stretching'],
+                        'resistance-bands': ['Warm-up: Dynamic stretches', 'Banded bicep curls: 3 sets of 15 reps', 'Banded tricep extensions: 3 sets of 15 reps', 'Banded glute bridges: 3 sets of 20 reps', 'Cool-down: Stretching with bands'],
+                        'kettlebells': ['Warm-up: Kettlebell swings', 'Kettlebell goblet squats: 3 sets of 15 reps', 'Single-arm kettlebell presses: 3 sets of 12 reps (per arm)', 'Cool-down: Gentle stretching'],
+                        'pull-up-bar': ['Warm-up: 5-min cardio', 'Inverted rows: 3 sets of 12 reps', 'Bodyweight squats: 3 sets of 15 reps', 'Dead hangs: 3 sets of 45 seconds', 'Cool-down: Arm and shoulder stretches'],
+                        'trx': ['Warm-up: TRX dynamic mobility', 'TRX biceps curls: 3 sets of 15 reps', 'TRX triceps extensions: 3 sets of 15 reps', 'TRX lunges: 3 sets of 12 reps (per leg)', 'Cool-down: TRX assisted stretching'],
+                        'mat': ['Warm-up: Cat-cow stretch', 'Glute bridges: 3 sets of 15 reps', 'Push-ups on knees: 3 sets of 12 reps', 'Cool-down: Cobra pose'],
+                        'full-gym': ['Warm-up: 5-min elliptical', 'Leg press: 3 sets of 12 reps', 'Cable rows: 3 sets of 12 reps', 'Dumbbell curls: 3 sets of 15 reps', 'Cool-down: Foam rolling']
+                    },
+                    intermediate: {
+                        'bodyweight': ['Warm-up: Dynamic stretches', 'Decline push-ups: 4 sets of 12 reps', 'Bulgarian split squats: 4 sets of 10 reps (per leg)', 'Hanging leg raises: 4 sets of 15 reps', 'Cool-down: Static stretching'],
+                        'dumbbells': ['Warm-up: 5-min light cardio', 'Incline dumbbell press: 4 sets of 12 reps', 'Dumbbell lunges: 4 sets of 12 reps (per leg)', 'Lateral raises: 4 sets of 15 reps', 'Cool-down: Stretching'],
+                        'resistance-bands': ['Warm-up: Band pull-aparts', 'Banded squats superset with glute bridges: 3 sets of 20 reps each', 'Banded rows: 3 sets of 15 reps', 'Banded press: 3 sets of 15 reps', 'Cool-down: Stretching with bands'],
+                        'kettlebells': ['Warm-up: Kettlebell swings', 'Kettlebell goblet squats: 4 sets of 12 reps', 'Kettlebell single-leg deadlifts: 4 sets of 10 reps (per leg)', 'Kettlebell overhead lunges: 3 sets of 8 reps (per leg)', 'Cool-down: Stretching'],
+                        'pull-up-bar': ['Warm-up: 5-min row machine', 'Pull-ups: 4 sets to failure', 'Chin-ups: 4 sets of 8-10 reps', 'Hanging leg raises: 4 sets of 15 reps', 'Cool-down: Hanging stretches'],
+                        'trx': ['Warm-up: TRX dynamic mobility', 'TRX chest press: 4 sets of 12 reps', 'TRX single-arm rows: 4 sets of 10 reps', 'TRX hamstring curls: 4 sets of 15 reps', 'Cool-down: TRX assisted stretching'],
+                        'mat': ['Warm-up: Glute bridges', 'Russian twists: 4 sets of 25 reps', 'V-ups: 4 sets of 15 reps', 'Plank with knee tucks: 4 sets of 20 reps', 'Cool-down: Pigeon pose'],
+                        'full-gym': ['Warm-up: 5-min elliptical', 'Barbell squats: 4 sets of 10 reps', 'Barbell bent-over rows: 4 sets of 10 reps', 'Dumbbell lateral raises: 4 sets of 15 reps', 'Cool-down: Foam rolling']
+                    }
+                },
+                endurance: {
+                    beginner: {
+                        'bodyweight': ['Warm-up: 5-min jog in place', 'Jumping jacks: 3 sets of 30 reps', 'High knees: 3 sets of 30 seconds', 'Bodyweight squats: 3 sets of 15 reps', 'Cool-down: Static stretches'],
+                        'dumbbells': ['Warm-up: 5-min jump rope', 'Dumbbell thrusters: 3 sets of 12 reps', 'Dumbbell swings: 3 sets of 15 reps', 'Dumbbell plank rows: 3 sets of 10 reps (per arm)', 'Cool-down: Stretching'],
+                        'resistance-bands': ['Warm-up: Dynamic stretches', 'Banded lateral walks: 3 sets of 20 reps', 'Banded jumping squats: 3 sets of 15 reps', 'Banded wood chops: 3 sets of 12 reps (per side)', 'Cool-down: Stretching with bands'],
+                        'kettlebells': ['Warm-up: Kettlebell halos', 'Kettlebell swings: 4 sets of 20 reps', 'Kettlebell goblet squats: 3 sets of 15 reps', 'Kettlebell push press: 3 sets of 10 reps (per arm)', 'Cool-down: Gentle stretching'],
+                        'pull-up-bar': ['Warm-up: 5-min cardio', 'Jumping pull-ups: 3 sets of 10 reps', 'Inverted rows: 3 sets of 12 reps', 'Hanging leg raises: 3 sets of 15 reps', 'Cool-down: Hanging stretches'],
+                        'trx': ['Warm-up: TRX dynamic mobility', 'TRX mountain climbers: 3 sets of 45 seconds', 'TRX single-leg squats: 3 sets of 10 reps (per leg)', 'TRX plank: 3 sets of 1 minute', 'Cool-down: TRX assisted stretching'],
+                        'mat': ['Warm-up: Cat-cow stretch', 'Flutter kicks: 3 sets of 30 seconds', 'Bicycle crunches: 3 sets of 20 reps', 'Cool-down: Cobra pose'],
+                        'full-gym': ['Warm-up: 5-min row machine', 'Treadmill sprints: 5 rounds of 30 sec on, 1 min off', 'Kettlebell swings: 3 sets of 20 reps', 'Cool-down: Static stretching']
+                    },
+                    intermediate: {
+                        'bodyweight': ['Warm-up: Dynamic stretches', 'Burpees: 4 sets of 15 reps', 'High knees: 4 sets of 45 seconds', 'Box jumps: 4 sets of 10 reps', 'Cool-down: Static stretching'],
+                        'dumbbells': ['Warm-up: 5-min jump rope', 'Dumbbell snatches: 4 sets of 8 reps (per arm)', 'Dumbbell burpee clean and press: 4 sets of 10 reps', 'Dumbbell farmer\'s walk: 4 sets of 50m', 'Cool-down: Stretching'],
+                        'resistance-bands': ['Warm-up: Dynamic stretches', 'Banded sprints: 4 sets of 30m', 'Banded jump squats: 4 sets of 20 reps', 'Banded running man: 4 sets of 45 seconds', 'Cool-down: Stretching with bands'],
+                        'kettlebells': ['Warm-up: Kettlebell swings', 'Kettlebell clean and press: 4 sets of 10 reps (per arm)', 'Kettlebell farmer\'s walk: 4 sets of 50m', 'Kettlebell thrusters: 4 sets of 12 reps', 'Cool-down: Stretching'],
+                        'pull-up-bar': ['Warm-up: 5-min cardio', 'Pull-ups: 4 sets of 10 reps', 'Toes to bar: 4 sets of 12 reps', 'Burpee pull-ups: 3 sets of 8 reps', 'Cool-down: Hanging stretches'],
+                        'trx': ['Warm-up: TRX dynamic mobility', 'TRX burpees: 4 sets of 10 reps', 'TRX single-leg squats: 4 sets of 12 reps (per leg)', 'TRX power pull: 4 sets of 10 reps', 'Cool-down: TRX assisted stretching'],
+                        'mat': ['Warm-up: Glute bridges', 'Mountain climbers: 4 sets of 60 seconds', 'Bicycle crunches: 4 sets of 25 reps', 'Plank with knee tucks: 4 sets of 20 reps', 'Cool-down: Pigeon pose'],
+                        'full-gym': ['Warm-up: 5-min row machine', 'Treadmill sprints: 8 rounds of 30 sec on, 30 sec off', 'Box jumps: 4 sets of 10 reps', 'Kettlebell swings: 4 sets of 20 reps', 'Cool-down: Foam rolling']
+                    }
+                },
+                flexibility: {
+                    beginner: {
+                        'bodyweight': ['Warm-up: Gentle cardio', 'Cat-cow stretch: 10 reps', 'Downward dog: 30 seconds', 'Pigeon pose: 30 seconds (per side)', 'Cool-down: Child\'s pose'],
+                        'dumbbells': ['Warm-up: Light cardio', 'Lateral lunges: 3 sets of 10 reps', 'Dead hangs (holding dumbbells): 3 sets of 30 seconds', 'Standing toe touch: 3 sets of 10 reps', 'Cool-down: Static stretching'],
+                        'resistance-bands': ['Warm-up: Light cardio', 'Banded hamstring stretch: 3 sets of 30 seconds', 'Banded shoulder mobility: 3 sets of 12 reps', 'Banded leg stretches: 3 sets of 20 seconds (per leg)', 'Cool-down: Gentle stretching with bands'],
+                        'kettlebells': ['Warm-up: Gentle cardio', 'Kettlebell goblet squats (deep): 3 sets of 12 reps', 'Kettlebell swings: 3 sets of 15 reps', 'Cool-down: Static stretching'],
+                        'pull-up-bar': ['Warm-up: 5-min cardio', 'Passive dead hangs: 3 sets of 45 seconds', 'Side to side hangs: 3 sets of 30 seconds', 'Cool-down: Shoulder stretches'],
+                        'trx': ['Warm-up: TRX assisted squats', 'TRX assisted hamstring stretch: 3 sets of 30 seconds', 'TRX chest stretch: 3 sets of 30 seconds', 'TRX assisted pigeon pose: 3 sets of 30 seconds (per leg)', 'Cool-down: TRX assisted stretching'],
+                        'mat': ['Warm-up: Cat-cow stretch', 'Glute bridges: 3 sets of 15 reps', 'Thread the needle: 3 sets of 10 reps (per side)', 'Cool-down: Cobra pose'],
+                        'full-gym': ['Warm-up: 5-min light cardio', 'Foam rolling (all major muscle groups)', 'Leg press machine calf stretch: 3 sets of 30 seconds', 'Cool-down: Static stretching']
+                    },
+                    intermediate: {
+                        'bodyweight': ['Warm-up: Dynamic stretches', 'Deep squats: 3 sets of 20 reps', 'Spiderman lunges: 3 sets of 10 reps (per side)', 'Pancake stretch: 3 sets of 45 seconds', 'Cool-down: Static stretches'],
+                        'dumbbells': ['Warm-up: 5-min cardio', 'Dumbbell deep lunges: 4 sets of 10 reps (per leg)', 'Dumbbell-assisted shoulder dislocates: 4 sets of 12 reps', 'Cool-down: Static stretching'],
+                        'resistance-bands': ['Warm-up: Dynamic stretches', 'Banded shoulder stretch: 4 sets of 30 seconds', 'Banded side leg lift: 4 sets of 15 reps (per leg)', 'Cool-down: Stretching with bands'],
+                        'kettlebells': ['Warm-up: Kettlebell windmills', 'Kettlebell overhead squats: 4 sets of 8 reps', 'Kettlebell front rack lunge: 4 sets of 10 reps (per leg)', 'Cool-down: Static stretching'],
+                        'pull-up-bar': ['Warm-up: 5-min row machine', 'Dead hangs: 4 sets of 1 minute', 'Shoulder dislocates with a towel on bar: 4 sets of 10 reps', 'Cool-down: Lat and shoulder stretches'],
+                        'trx': ['Warm-up: TRX dynamic mobility', 'TRX deep lunge: 4 sets of 10 reps (per leg)', 'TRX assisted single leg deadlift: 4 sets of 8 reps (per leg)', 'TRX assisted side plank: 4 sets of 30 seconds', 'Cool-down: TRX assisted stretching'],
+                        'mat': ['Warm-up: Cat-cow stretch', 'Russian twists: 4 sets of 25 reps', 'Pigeon pose: 4 sets of 45 seconds (per side)', 'Cool-down: Butterfly stretch'],
+                        'full-gym': ['Warm-up: 5-min cardio', 'Foam rolling (all major muscle groups)', 'Leg extension machine hamstring stretch: 4 sets of 30 seconds', 'Cable machine torso twists: 4 sets of 15 reps (per side)', 'Cool-down: Static stretching']
+                    }
+                }
+            };
+
+            function generateWorkout() {
+                const goal = document.getElementById('goal').value;
+                const level = document.getElementById('level').value;
+                const equipment = document.getElementById('equipment').value;
+                const mode = document.getElementById('mode').value;
+                let workout = [];
+                if (equipment === 'random') {
+                    const goals = Object.keys(workouts);
+                    const levels = Object.keys(workouts.strength);
+                    const allEquipment = Object.keys(workouts[goals[0]][levels[0]]);
+                    const randomGoal = goals[Math.floor(Math.random() * goals.length)];
+                    const randomLevel = levels[Math.floor(Math.random() * levels.length)];
+                    const randomEquipment = allEquipment[Math.floor(Math.random() * allEquipment.length)];
+                    if (workouts[randomGoal] && workouts[randomGoal][randomLevel] && workouts[randomGoal][randomLevel][randomEquipment]) {
+                        workout = workouts[randomGoal][randomLevel][randomEquipment];
+                    } else {
+                        workout = ['A randomized workout for your chosen parameters is not available. Here is a generic full-body routine:', 'Bodyweight squats: 3 sets of 15 reps', 'Push-ups: 3 sets of 10 reps', 'Plank: 3 sets of 30 seconds'];
+                    }
+                } else if (workouts[goal] && workouts[goal][level] && workouts[goal][level][equipment]) {
+                    workout = workouts[goal][level][equipment];
+                } else {
+                    workout = [
+                        'Warm-up: 5 minutes of light cardio',
+                        'Bodyweight Squats: 3 sets of 10-15 reps',
+                        'Push-ups: 3 sets of 5-10 reps',
+                        'Plank: 3 sets of 30-60 seconds',
+                        'Cool-down: Basic stretching'
+                    ];
+                }
+                let formattedWorkout = [];
+                if (mode === 'circuit') {
+                    formattedWorkout.push('Circuit Training Mode:');
+                    formattedWorkout.push(...workout.slice(1, -1).map(item => `   - ${item}`));
+                    formattedWorkout.push('Perform each exercise back-to-back with minimal rest. Rest 1-2 minutes between circuits.');
+                    formattedWorkout.push('Cool-down: Gentle stretching');
+                } else {
+                    formattedWorkout.push('Sets & Reps Mode:');
+                    formattedWorkout.push(...workout);
+                }
+                currentWorkout = formattedWorkout;
+                workoutHeading.textContent = 'Your Custom Workout:';
+                workoutList.innerHTML = '';
+                formattedWorkout.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    workoutList.appendChild(li);
+                });
+                outputDiv.style.display = 'block';
+                timerControls.style.display = 'flex';
+                timerDisplay.style.display = 'block';
+            }
+
+            function logWorkout() {
+                const goal = document.getElementById('goal').value;
+                const level = document.getElementById('level').value;
+                const equipment = document.getElementById('equipment').value;
+                const mode = document.getElementById('mode').value;
+                const date = new Date().toLocaleString();
+                const logItem = document.createElement('div');
+                logItem.className = 'log-history-item';
+                const workoutItemsHTML = currentWorkout.map(item => `<li>${item}</li>`).join('');
+                logItem.innerHTML = `
+                    <h4>Logged Workout on ${date}</h4>
+                    <p><strong>Goal:</strong> ${goal}</p>
+                    <p><strong>Level:</strong> ${level}</p>
+                    <p><strong>Equipment:</strong> ${equipment}</p>
+                    <p><strong>Routine (${mode}):</strong></p>
+                    <ul>
+                        ${workoutItemsHTML}
+                    </ul>
+                `;
+                const emptyMessage = workoutHistory.querySelector('.empty-history-message');
+                if (emptyMessage) {
+                    emptyMessage.remove();
+                }
+                workoutHistory.prepend(logItem);
+            }
+
+            function clearHistory() {
+                if (confirm('Are you sure you want to clear all workout history? This action cannot be undone.')) {
+                    workoutHistory.innerHTML = '<p class="empty-history-message">No workouts logged yet. Generate and log your first one!</p>';
+                }
+            }
+
+            function updateTimer() {
+                const minutes = Math.floor(currentSeconds / 60);
+                const seconds = currentSeconds % 60;
+                timerDisplay.textContent = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                if (currentSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    alert('Time is up!');
+                    startTimerBtn.style.display = 'block';
+                    stopTimerBtn.style.display = 'none';
+                    return;
+                }
+                currentSeconds--;
+            }
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                generateWorkout();
+            });
+
+            shuffleButton.addEventListener('click', function() {
+                document.getElementById('equipment').value = 'random';
+                generateWorkout();
+            });
+
+            logButton.addEventListener('click', logWorkout);
+
+            resetButton.addEventListener('click', function() {
+                form.reset();
+                outputDiv.style.display = 'none';
+                timerControls.style.display = 'none';
+                timerDisplay.style.display = 'none';
+                clearInterval(timerInterval);
+                workoutList.innerHTML = '';
+                currentWorkout = [];
+                startTimerBtn.style.display = 'block';
+                stopTimerBtn.style.display = 'none';
+                timerDisplay.textContent = '00:00';
+            });
+
+            historyHeader.addEventListener('click', function() {
+                const icon = historyHeader.querySelector('i');
+                historyContent.classList.toggle('visible');
+                icon.classList.toggle('fa-chevron-down');
+                icon.classList.toggle('fa-chevron-up');
+            });
+
+            clearHistoryBtn.addEventListener('click', clearHistory);
+
+            startTimerBtn.addEventListener('click', function() {
+                const minutes = document.getElementById('timer-minutes').value;
+                if (minutes > 0) {
+                    totalSeconds = minutes * 60;
+                    currentSeconds = totalSeconds;
+                    clearInterval(timerInterval);
+                    timerInterval = setInterval(updateTimer, 1000);
+                    startTimerBtn.style.display = 'none';
+                    stopTimerBtn.style.display = 'block';
+                } else {
+                    alert('Please set a valid timer duration.');
+                }
+            });
+
+            stopTimerBtn.addEventListener('click', function() {
+                clearInterval(timerInterval);
+                timerDisplay.textContent = `${Math.floor(totalSeconds / 60) < 10 ? '0' : ''}${Math.floor(totalSeconds / 60)}:00`;
+                startTimerBtn.style.display = 'block';
+                stopTimerBtn.style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
